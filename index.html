@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Assistant: Workday Vocab & Speaking Challenge</title>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.75);
+            --card-border: rgba(255, 255, 255, 0.12);
+            --accent-blue: #4361ee;
+            --accent-cyan: #4cc9f0;
+            --accent-purple: #7209b7;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-sub: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            height: 100vh;
+            max-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Ambient Glassmorphism & UI Containers */
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .glass-pill {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 0.6rem;
+            padding: 0.35rem 0.65rem;
+        }
+
+        /* Parallax Floating Decor */
+        .parallax-bg {
+            position: absolute;
+            pointer-events: none;
+            will-change: transform;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* Interactive Draggable Chips */
+        .draggable-chip {
+            touch-action: manipulation;
+            transition: all 0.2s ease;
+            cursor: grab;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.35rem 0.65rem;
+            border-radius: 0.6rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .draggable-chip:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+        }
+
+        .draggable-chip.selected {
+            background: var(--accent-blue);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px var(--accent-cyan);
+            color: #ffffff;
+        }
+
+        .drop-zone {
+            transition: all 0.2s ease;
+            min-height: 2.1rem;
+            border: 1.5px dashed rgba(255, 255, 255, 0.25);
+            border-radius: 0.5rem;
+            background: rgba(15, 23, 42, 0.5);
+            padding: 0.2rem 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+
+        .drop-zone:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .drop-zone.drag-over {
+            background: rgba(67, 97, 238, 0.3) !important;
+            border-color: var(--accent-cyan) !important;
+            transform: scale(1.02);
+        }
+
+        .drop-zone.correct {
+            border-style: solid;
+            border-color: var(--accent-green) !important;
+            background: rgba(16, 185, 129, 0.15) !important;
+            color: #34d399;
+        }
+
+        .drop-zone.incorrect {
+            border-style: solid;
+            border-color: var(--accent-red) !important;
+            background: rgba(239, 68, 68, 0.15) !important;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-6px); }
+            40%, 80% { transform: translateX(6px); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(2deg); }
+        }
+
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-float-delayed { animation: float 8s ease-in-out infinite 2s; }
+
+        /* General Layout Helpers */
+        .container {
+            width: 100%;
+            max-width: 1280px;
+            height: 100vh;
+            max-height: 100vh;
+            margin: 0 auto;
+            padding: 0.6rem 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .flex-gap-2 { display: flex; gap: 0.5rem; align-items: center; }
+        .flex-gap-3 { display: flex; gap: 0.6rem; align-items: center; }
+        
+        /* 2-Column Vertical Layout (Items 1-8 Left, 9-16 Right - Matching PPT Slide) */
+        .grid-tasks {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            grid-auto-flow: column;
+            gap: 0.35rem 0.75rem;
+            flex: 1;
+            min-height: 0;
+            align-content: stretch;
+        }
+
+        @media (max-width: 680px) {
+            .grid-tasks {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+                grid-auto-flow: row;
+                overflow-y: auto;
+            }
+        }
+
+        .btn {
+            padding: 0.45rem 0.9rem;
+            border-radius: 0.6rem;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .tab-btn {
+            padding: 0.4rem 0.9rem;
+            border-radius: 0.6rem;
+            font-weight: 700;
+            font-size: 0.8rem;
+            background: transparent;
+            color: var(--text-sub);
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: rgba(67, 97, 238, 0.25);
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+    </style>
+</head>
+<body>
+
+    <div id="parallax-container" style="position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;">
+        <div class="parallax-bg" style="top: -10%; left: -10%; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(67,97,238,0.25) 0%, rgba(0,0,0,0) 70%); filter: blur(60px);" data-depth="0.03"></div>
+        <div class="parallax-bg" style="bottom: -10%; right: -5%; width: 600px; height: 600px; border-radius: 50%; background: radial-gradient(circle, rgba(76,201,240,0.2) 0%, rgba(0,0,0,0) 70%); filter: blur(80px);" data-depth="0.05"></div>
+        
+        <!-- Floating Visual Emojis -->
+        <div class="parallax-bg animate-float" style="top: 15%; left: 5%; opacity: 0.2; font-size: 2.5rem;" data-depth="0.08">✉️</div>
+        <div class="parallax-bg animate-float-delayed" style="top: 65%; left: 8%; opacity: 0.15; font-size: 3rem;" data-depth="0.12">📑</div>
+        <div class="parallax-bg animate-float" style="top: 20%; right: 6%; opacity: 0.2; font-size: 3rem;" data-depth="0.1">✈️</div>
+        <div class="parallax-bg animate-float-delayed" style="bottom: 18%; right: 10%; opacity: 0.2; font-size: 2.5rem;" data-depth="0.06">💻</div>
+    </div>
+
+    <div class="container" style="position: relative; z-index: 10;">
+        
+        <!-- Header Controls -->
+        <header class="flex-between" style="flex-wrap: nowrap; gap: 0.75rem; margin-bottom: 0.5rem; flex-shrink: 0;">
+            <div class="flex-gap-3">
+                <div style="width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple)); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; box-shadow: 0 4px 12px rgba(67, 97, 238, 0.4); flex-shrink: 0;">
+                    💼
+                </div>
+                <div>
+                    <h1 style="font-size: 1.15rem; font-weight: 800; background: linear-gradient(90deg, #ffffff, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1.2;">
+                        Language Focus 1: Office Tasks
+                    </h1>
+                    <p style="font-size: 0.75rem; color: var(--text-sub);">Interactive Workday Vocabulary & Speaking Module (A1 Level)</p>
+                </div>
+            </div>
+
+            <!-- Mode Selector Tabs -->
+            <div class="glass-pill flex-gap-2">
+                <button id="tab-round1" class="tab-btn active" onclick="switchRound(1)">
+                    Round 1: Fill the Gaps
+                </button>
+                <button id="tab-round2" class="tab-btn" onclick="switchRound(2)">
+                    Round 2: Speaking Practice 🎙️
+                </button>
+                <button id="audio-toggle-btn" class="glass-pill" style="padding: 0.25rem 0.5rem; cursor: pointer; color: var(--accent-cyan);" title="Toggle Sound FX">
+                    🔊
+                </button>
+            </div>
+        </header>
+
+        <div id="view-round1" style="display: flex; flex-direction: column; gap: 0.4rem; flex: 1; min-height: 0;">
+            <!-- Sticky Word Bank with Integrated Progress Bar -->
+            <section class="glass-card" style="padding: 0.6rem 0.85rem; border-top: 2px solid var(--accent-blue); flex-shrink: 0;">
+                <div class="flex-between" style="margin-bottom: 0.4rem;">
+                    <div class="flex-gap-2">
+                        <span style="width: 7px; height: 7px; border-radius: 50%; background: var(--accent-cyan);"></span>
+                        <h2 style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--text-sub);">
+                            Word Bank (Tap or Drag to Gap)
+                        </h2>
+                    </div>
+
+                    <!-- Integrated Compact Progress Meter -->
+                    <div class="flex-gap-3">
+                        <span id="progress-text" style="font-weight: 800; color: var(--accent-cyan); font-size: 0.8rem;">0 / 16</span>
+                        <div style="width: 90px; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                            <div id="progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-blue)); transition: width 0.3s ease;"></div>
+                        </div>
+                        <button id="reset-btn" style="background: none; border: none; color: var(--text-sub); font-size: 0.75rem; cursor: pointer; margin-left: 0.5rem;" onclick="resetRound1()">
+                            ↺ Reset
+                        </button>
+                    </div>
+                </div>
+
+                <div id="word-bank" style="display: flex; flex-wrap: wrap; gap: 0.4rem; min-height: 36px; align-items: center;">
+                    <!-- Dynamically injected word chips -->
+                </div>
+            </section>
+
+            <!-- 16 Tasks Grid fitting perfectly inside 100vh viewport -->
+            <section class="glass-card" style="padding: 0.6rem 0.85rem; flex: 1; min-height: 0; display: flex; flex-direction: column;">
+                <div id="tasks-container" class="grid-tasks">
+                    <!-- Dynamic rendering of tasks 1 through 16 in 2-column layout -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Clean, Noise-Free Round 2 Speaking Practice -->
+        <div id="view-round2" style="display: none; flex: 1; min-height: 0; flex-direction: column; justify-content: center;">
+            <section class="glass-card" style="padding: 1rem 1.25rem; display: flex; flex-direction: column; justify-content: space-between; flex: 1; min-height: 0; text-align: center; border-top: 3px solid var(--accent-purple);">
+                <div>
+                    <span style="font-size: 2rem; display: block; margin-bottom: 0.1rem;">🎙️</span>
+                    <h2 style="font-size: 1.4rem; font-weight: 800; background: linear-gradient(90deg, #ffffff, var(--accent-cyan)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.2rem;">
+                        Round 2: Speaking Practice
+                    </h2>
+                    <p style="font-size: 1.1rem; font-weight: 700; color: #ffffff; margin-bottom: 0.5rem;">
+                        Which of these tasks do you do daily?
+                    </p>
+                </div>
+
+                <!-- Interactive daily task selection chips -->
+                <div id="daily-checklist" style="display: flex; flex-wrap: wrap; gap: 0.4rem; justify-content: center; align-content: center; flex: 1; min-height: 0; overflow-y: auto; padding: 0.4rem 0;">
+                    <!-- Interactive task buttons -->
+                </div>
+
+                <!-- Generated Routine Statement -->
+                <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid var(--accent-blue); border-radius: 0.75rem; padding: 0.75rem 1rem; margin: 0.5rem 0;">
+                    <span style="font-size: 0.7rem; text-transform: uppercase; color: var(--accent-cyan); font-weight: 800; letter-spacing: 1px; display: block; margin-bottom: 0.2rem;">
+                        Suggested Sentence
+                    </span>
+                    <p id="daily-sentence-output" style="font-size: 1.05rem; font-weight: 700; color: #ffffff; font-style: italic;">
+                        "Daily, I..."
+                    </p>
+                </div>
+
+                <!-- Clean Partner Call to Action -->
+                <div style="background: linear-gradient(135deg, rgba(114, 9, 183, 0.35), rgba(67, 97, 238, 0.35)); border: 1px solid var(--accent-purple); border-radius: 0.75rem; padding: 0.65rem 1rem; display: flex; align-items: center; justify-content: center; gap: 0.6rem;">
+                    <span style="font-size: 1.4rem;">🗣️</span>
+                    <span style="font-size: 0.95rem; font-weight: 800; color: #ffffff; letter-spacing: 0.3px;">
+                        Now tell your partner!
+                    </span>
+                </div>
+            </section>
+        </div>
+
+        <footer style="text-align: center; padding: 0.35rem 0 0.1rem; font-size: 0.7rem; color: var(--text-sub); border-top: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;">
+            Offline Business English Learning Module • Level A1 Elementary
+        </footer>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center; padding: 1rem;">
+        <div class="glass-card" style="max-width: 440px; width: 100%; text-align: center; border: 1.5px solid var(--accent-cyan); padding: 1.75rem 1.5rem;">
+            <div style="font-size: 3.5rem; margin-bottom: 0.3rem;">🌟</div>
+            <h2 style="font-size: 1.75rem; font-weight: 800; color: #ffffff; margin-bottom: 0.3rem;">Excellent! 🎉</h2>
+            <p style="font-size: 0.9rem; color: var(--text-sub); margin-bottom: 1.4rem;">
+                All 16 office tasks completed correctly.
+            </p>
+            <div class="flex-gap-2" style="justify-content: center; flex-direction: column; gap: 0.6rem;">
+                <button class="btn btn-primary" style="padding: 0.7rem 1.2rem; font-size: 0.9rem; justify-content: center; width: 100%;" onclick="startRound2FromModal()">
+                    Press when you're ready for Round 2 ➔
+                </button>
+                <button class="btn btn-secondary" style="justify-content: center; font-size: 0.8rem; width: 100%;" onclick="closeVictoryModal()">
+                    Review Answers
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Complete 16 Task Dataset from Slide
+        const TASKS = [
+            { id: 1, answer: 'print out', rest: 'the letters', hint: 'Action for producing paper letters from printer', visual: '🖨️' },
+            { id: 2, answer: 'put', rest: 'the letters in envelopes', hint: 'Place inside paper covers', visual: '✉️' },
+            { id: 3, answer: 'stick', rest: 'the labels on the envelopes', hint: 'Attach adhesive labels', visual: '🏷️' },
+            { id: 4, answer: 'put', rest: 'stamps on the envelopes', hint: 'Place postage stamps', visual: '📮' },
+            { id: 5, answer: 'mail', rest: 'the letters', hint: 'Send by post office', visual: '📬' },
+            { id: 6, answer: 'set up', rest: 'equipment', hint: 'Prepare projector or laptop', visual: '🔌' },
+            { id: 7, answer: 'collect', rest: 'Mr. Davis from the airport', hint: 'Pick up arriving guest', visual: '🛬' },
+            { id: 8, answer: 'show', rest: 'the presentation to Mr. Davis', hint: 'Display slides to client', visual: '📊' },
+            { id: 9, answer: 'take', rest: 'Mr. Davis back to the airport', hint: 'Drive guest back', visual: '🛫' },
+            { id: 10, answer: 'take', rest: 'notes in the meeting', hint: 'Write key points down', visual: '📝' },
+            { id: 11, answer: 'print', rest: 'flyers', hint: 'Produce paper promos', visual: '📄' },
+            { id: 12, answer: 'fold', rest: 'flyers', hint: 'Fold paper into sections', visual: '📐' },
+            { id: 13, answer: 'answer', rest: 'e-mails', hint: 'Reply to digital messages', visual: '📧' },
+            { id: 14, answer: 'write', rest: 'a report', hint: 'Compose formal document', visual: '💻' },
+            { id: 15, answer: 'give', rest: 'a report', hint: 'Deliver report to manager', visual: '🗣️' },
+            { id: 16, answer: 'take', rest: 'an important phone call', hint: 'Answer incoming call', visual: '📞' }
+        ];
+
+        // Word Bank Pool with Exact Frequency Counts
+        const VERB_POOL = [
+            { id: 'answer-1', text: 'answer' },
+            { id: 'collect-1', text: 'collect' },
+            { id: 'fold-1', text: 'fold' },
+            { id: 'give-1', text: 'give' },
+            { id: 'mail-1', text: 'mail' },
+            { id: 'print-1', text: 'print' },
+            { id: 'print out-1', text: 'print out' },
+            { id: 'put-1', text: 'put' },
+            { id: 'put-2', text: 'put' },
+            { id: 'set up-1', text: 'set up' },
+            { id: 'show-1', text: 'show' },
+            { id: 'stick-1', text: 'stick' },
+            { id: 'take-1', text: 'take' },
+            { id: 'take-2', text: 'take' },
+            { id: 'take-3', text: 'take' },
+            { id: 'write-1', text: 'write' }
+        ];
+
+        // App State
+        let selectedChip = null;
+        let placedAnswers = {}; // taskId -> verbChipId
+        let soundEnabled = true;
+        let selectedDailyTasks = new Set();
+        let currentCardIndex = 0;
+
+        class SoundFX {
+            constructor() { this.ctx = null; }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playPop() {
+                if (!soundEnabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.08);
+            }
+            playSuccess() {
+                if (!soundEnabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.08);
+                osc.frequency.setValueAtTime(783.99, now + 0.16);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.35);
+            }
+            playError() {
+                if (!soundEnabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(140, now + 0.2);
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.2);
+            }
+        }
+        const sfx = new SoundFX();
+
+        // Browser Native Speech Synthesis (100% Offline Compatible)
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.88; // Clear A1 Speed
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            initParallax();
+            renderWordBank();
+            renderTasks();
+            renderDailyChecklist();
+
+            document.getElementById('audio-toggle-btn').addEventListener('click', () => {
+                soundEnabled = !soundEnabled;
+                document.getElementById('audio-toggle-btn').innerText = soundEnabled ? '🔊' : '🔇';
+            });
+        });
+
+        // 1. Mouse Parallax FX
+        function initParallax() {
+            const parallaxElements = document.querySelectorAll('.parallax-bg');
+            window.addEventListener('mousemove', (e) => {
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                const dx = e.clientX - cx;
+                const dy = e.clientY - cy;
+
+                parallaxElements.forEach(el => {
+                    const depth = parseFloat(el.getAttribute('data-depth') || 0.05);
+                    el.style.transform = `translate3d(${dx * depth}px, ${dy * depth}px, 0px)`;
+                });
+            });
+        }
+
+        // 2. Render Word Bank Chips
+        function renderWordBank() {
+            const bankEl = document.getElementById('word-bank');
+            bankEl.innerHTML = '';
+
+            const remaining = VERB_POOL.filter(item => !Object.values(placedAnswers).includes(item.id));
+            remaining.sort((a, b) => a.text.localeCompare(b.text));
+
+            remaining.forEach(item => {
+                const chip = document.createElement('div');
+                chip.id = `chip-${item.id}`;
+                chip.draggable = true;
+                chip.className = `draggable-chip ${selectedChip === item.id ? 'selected' : ''}`;
+                chip.innerText = item.text;
+
+                chip.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', item.id);
+                    sfx.playPop();
+                });
+
+                chip.addEventListener('click', () => {
+                    sfx.playPop();
+                    if (selectedChip === item.id) {
+                        selectedChip = null;
+                    } else {
+                        selectedChip = item.id;
+                    }
+                    renderWordBank();
+                });
+
+                bankEl.appendChild(chip);
+            });
+
+            if (remaining.length === 0) {
+                bankEl.innerHTML = `<span style="font-size: 0.85rem; color: var(--accent-green); font-weight: 700;">All words placed! Excellent! 🎉</span>`;
+            }
+        }
+
+        function renderTasks() {
+            const container = document.getElementById('tasks-container');
+            container.innerHTML = '';
+
+            TASKS.forEach(task => {
+                const card = document.createElement('div');
+                card.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 0.35rem; background: rgba(15,23,42,0.4); padding: 0.3rem 0.55rem; border-radius: 0.5rem; border: 1px solid rgba(255,255,255,0.08);';
+
+                const isPlaced = placedAnswers[task.id] !== undefined;
+                let currentVerb = '';
+                let isCorrect = false;
+
+                if (isPlaced) {
+                    const chipId = placedAnswers[task.id];
+                    const item = VERB_POOL.find(v => v.id === chipId);
+                    currentVerb = item ? item.text : '';
+                    isCorrect = (currentVerb === task.answer);
+                }
+
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.4rem; flex: 1; min-width: 0;">
+                        <span style="font-size: 0.8rem; font-weight: 800; color: var(--text-sub); width: 20px; text-align: right; flex-shrink: 0;">${task.id}.</span>
+                        <span style="font-size: 1.05rem; display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: rgba(255,255,255,0.08); border-radius: 6px; flex-shrink: 0;" title="${task.hint}">${task.visual}</span>
+                        <div id="drop-zone-${task.id}" class="drop-zone ${isPlaced ? (isCorrect ? 'correct' : 'incorrect') : ''}" style="min-width: 95px; flex-shrink: 0;">
+                            <span style="font-weight: 700; font-size: 0.8rem;">${currentVerb || '_______'}</span>
+                            ${isPlaced ? `
+                                <button onclick="clearGap(${task.id}, event)" style="background: none; border: none; color: var(--text-sub); cursor: pointer; font-size: 0.75rem; padding: 0 0 0 0.3rem;" title="Clear">✕</button>
+                            ` : ''}
+                        </div>
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #ffffff; white-space: nowrap; flex: 1;">${task.rest}</span>
+                    </div>
+                    <button onclick="speakText('${task.answer} ${task.rest}')" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); font-size: 0.85rem; cursor: pointer; padding: 0.2rem 0.45rem; border-radius: 0.4rem; color: var(--accent-cyan); flex-shrink: 0; margin-left: 0.3rem;" title="Listen">🔊</button>
+                `;
+
+                const zone = card.querySelector(`#drop-zone-${task.id}`);
+                
+                zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+                zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    const chipId = e.dataTransfer.getData('text/plain');
+                    if (chipId) placeVerb(task.id, chipId);
+                });
+
+                zone.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'BUTTON') return;
+                    if (selectedChip) {
+                        placeVerb(task.id, selectedChip);
+                        selectedChip = null;
+                    }
+                });
+
+                container.appendChild(card);
+            });
+
+            updateProgress();
+        }
+
+        function placeVerb(taskId, chipId) {
+            const verbItem = VERB_POOL.find(v => v.id === chipId);
+            const task = TASKS.find(t => t.id === taskId);
+            if (!verbItem || !task) return;
+
+            placedAnswers[taskId] = chipId;
+
+            if (verbItem.text === task.answer) {
+                sfx.playSuccess();
+                speakText(`${verbItem.text} ${task.rest}`);
+            } else {
+                sfx.playError();
+            }
+
+            renderWordBank();
+            renderTasks();
+            checkVictory();
+        }
+
+        function clearGap(taskId, e) {
+            if (e) e.stopPropagation();
+            if (placedAnswers[taskId]) {
+                delete placedAnswers[taskId];
+                sfx.playPop();
+                renderWordBank();
+                renderTasks();
+            }
+        }
+
+        function updateProgress() {
+            let correct = 0;
+            TASKS.forEach(t => {
+                const chipId = placedAnswers[t.id];
+                if (chipId) {
+                    const item = VERB_POOL.find(v => v.id === chipId);
+                    if (item && item.text === t.answer) correct++;
+                }
+            });
+
+            document.getElementById('progress-text').innerText = `${correct} / ${TASKS.length}`;
+            document.getElementById('progress-bar').style.width = `${(correct / TASKS.length) * 100}%`;
+        }
+
+        function checkVictory() {
+            let correct = 0;
+            TASKS.forEach(t => {
+                const chipId = placedAnswers[t.id];
+                if (chipId) {
+                    const item = VERB_POOL.find(v => v.id === chipId);
+                    if (item && item.text === t.answer) correct++;
+                }
+            });
+
+            if (correct === TASKS.length) {
+                document.getElementById('victory-modal').style.display = 'flex';
+            }
+        }
+
+        function resetRound1() {
+            placedAnswers = {};
+            selectedChip = null;
+            sfx.playPop();
+            renderWordBank();
+            renderTasks();
+        }
+
+        function closeVictoryModal() {
+            document.getElementById('victory-modal').style.display = 'none';
+        }
+
+        function startRound2FromModal() {
+            closeVictoryModal();
+            switchRound(2);
+        }
+
+        function switchRound(roundNumber) {
+            sfx.playPop();
+            const tab1 = document.getElementById('tab-round1');
+            const tab2 = document.getElementById('tab-round2');
+            const view1 = document.getElementById('view-round1');
+            const view2 = document.getElementById('view-round2');
+
+            if (roundNumber === 1) {
+                tab1.classList.add('active');
+                tab2.classList.remove('active');
+                view1.style.display = 'flex';
+                view2.style.display = 'none';
+            } else {
+                tab2.classList.add('active');
+                tab1.classList.remove('active');
+                view2.style.display = 'flex';
+                view1.style.display = 'none';
+            }
+        }
+
+        function renderDailyChecklist() {
+            const container = document.getElementById('daily-checklist');
+            container.innerHTML = '';
+
+            TASKS.forEach(t => {
+                const rawPhrase = `${t.answer} ${t.rest}`;
+                const displayText = `${t.visual}  ${rawPhrase}`;
+                const chip = document.createElement('button');
+                chip.className = `btn ${selectedDailyTasks.has(rawPhrase) ? 'btn-primary' : 'btn-secondary'}`;
+                chip.style.padding = '0.45rem 0.85rem';
+                chip.style.fontSize = '0.825rem';
+                chip.innerText = displayText;
+
+                chip.onclick = () => {
+                    if (selectedDailyTasks.has(rawPhrase)) {
+                        selectedDailyTasks.delete(rawPhrase);
+                    } else {
+                        selectedDailyTasks.add(rawPhrase);
+                    }
+                    sfx.playPop();
+                    renderDailyChecklist();
+                    updateDailySentence();
+                };
+
+                container.appendChild(chip);
+            });
+        }
+
+        function updateDailySentence() {
+            const output = document.getElementById('daily-sentence-output');
+            if (selectedDailyTasks.size === 0) {
+                output.innerText = '"Daily, I..." (Select tasks above to build your sentence)';
+            } else {
+                const arr = Array.from(selectedDailyTasks);
+                if (arr.length === 1) {
+                    output.innerText = `"Daily, I ${arr[0]}."`;
+                } else if (arr.length === 2) {
+                    output.innerText = `"Daily, I ${arr[0]} and ${arr[1]}."`;
+                } else {
+                    const last = arr.pop();
+                    output.innerText = `"Daily, I ${arr.join(', ')}, and ${last}."`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
